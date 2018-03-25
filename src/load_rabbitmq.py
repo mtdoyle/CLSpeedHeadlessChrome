@@ -1,17 +1,19 @@
 # vim: tabstop=8 expandtab shiftwidth=4 softtabstop=4
 import pika
 import sys
+import json
 
+rabbitmq_settings = json.load(open('servers.json'))['servers']['rabbitmq']
 if len(sys.argv) > 1:
     filename = sys.argv[1]
 else:
-    filename = 'addresses_all_trimmed'
+    filename = 'edina_addresses_resolved'
 
 f = open(filename,'r')
 
 credentials = pika.PlainCredentials('guest', 'guest')
 
-connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', port=5672, credentials=credentials))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=rabbitmq_settings['host'], port=rabbitmq_settings['port'], credentials=credentials))
 
 channel = connection.channel()
 

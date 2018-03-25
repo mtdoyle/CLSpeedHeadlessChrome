@@ -1,11 +1,15 @@
 import psycopg2
 from psycopg2 import sql
+import json
+
+postgres_settings = json.load(open('servers.json'))['servers']['postgres']
 
 def create_tables():
     """ create tables in the PostgreSQL database"""
     commands = sql.SQL = (
         """
-        CREATE TABLE clspeed (
+        CREATE TABLE clspeed_edina (
+            speed DECIMAL,
             street VARCHAR(255),
             city VARCHAR(255),
             state VARCHAR(2),
@@ -20,7 +24,7 @@ def create_tables():
         # read the connection parameters
         # connect to the PostgreSQL server
 
-        conn = psycopg2.connect(host="localhost",
+        conn = psycopg2.connect(host=postgres_settings['host'],
                                 database="clspeed",
                                 user="clspeed",
                                 password="clspeed")
@@ -38,30 +42,31 @@ def create_tables():
             conn.close()
 
 
-def write_entry(entry):
+def write_entry(speed, entry):
     commands = sql.SQL = (
         """
-        INSERT INTO clspeed (street, city, state, zip, emm_lat, emm_lng, emm_acc)
-        VALUES ({0},{1},{2},{3},{4},{5},{6})
-        """.format(entry['street'],
-                   entry['city'],
-                   entry['state'],
-                   entry['zip'],
-                   entry['emm_lat'],
-                   entry['emm_lng'],
-                   entry['emm_acc']))
+        INSERT INTO clspeed_edina (speed, street, city, state, zip, emm_lat, emm_lng, emm_acc)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """)
     conn = None
     try:
         # read the connection parameters
         # connect to the PostgreSQL server
 
-        conn = psycopg2.connect(host="localhost",
+        conn = psycopg2.connect(host=postgres_settings['host'],
                                 database="clspeed",
                                 user="clspeed",
                                 password="clspeed")
         cur = conn.cursor()
         # create table one by one
-        cur.execute(commands)
+        cur.execute(commands, (speed,
+                               entry['street'],
+                               entry['city'],
+                               entry['state'],
+                               entry['zip'],
+                               entry['emm_lat'],
+                               entry['emm_lng'],
+                               entry['emm_acc']))
         # close communication with the PostgreSQL database server
         cur.close()
         # commit the changes
